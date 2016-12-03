@@ -189,8 +189,17 @@ if __name__=='__main__':
             firstFrame = False
 
         # cv2.drawContours(frame, ctp, -1, (180,0,0), 3)
-
+                
+        gray = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
         mask = bgSubtractor.apply(frame, learningRate=1.0/history)
+
+        edges = cv2.Canny(gray,50,150,apertureSize = 3)
+        minLineLength = 100
+        maxLineGap = 10
+        lines = cv2.HoughLinesP(edges,1,np.pi/180,100,minLineLength,maxLineGap)
+        for x1,y1,x2,y2 in lines[0]:
+            cv2.line(frame,(x1,y1),(x2,y2),(0,255,0),2)
+        
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
         mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
 
@@ -204,6 +213,7 @@ if __name__=='__main__':
         
         cv2.imshow('Original', frame)
         cv2.imshow('Moving Objects', mask & frame)
+        cv2.imshow('Edges', edges)
         c = cv2.waitKey(10)
         if c == 27:
             break
